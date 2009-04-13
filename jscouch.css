@@ -1,0 +1,110 @@
+/*
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * Mu Dynamics Research Labs wrote this file. As long as you retain this
+ * notice you can do whatever you want with this stuff. If we meet some day,
+ * and you think this stuff is worth it, you can buy us a beer in return.
+ *
+ * http://www.mudynamics.com
+ * http://labs.mudynamics.com
+ * http://www.pcapr.net
+ */
+body {
+    background-color: rgb(244, 244, 244);
+    color: rgb(51, 51, 51);
+    line-height: 135%;
+    font-size: 13px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+select, textarea, input {
+    font-size: 13px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.icouch fieldset#tabs legend a {
+    background-color: transparent;
+    margin: 2px;
+    padding: 2px;
+    border: none;
+    text-decoration: none;
+    outline: none;
+}
+
+.icouch fieldset#tabs legend a.active {
+    background-color: #dddddd;
+    border: 1px solid #9aafe5;
+}
+
+.icouch select {
+    vertical-align: middle;
+}
+
+.icouch a {
+    cursor: pointer;
+    color: rgb(39, 39, 192);
+}
+
+.icouch a:hover {
+    color: black;
+}
+
+.icouch div#doc {
+    margin-left: 20px;
+}
+
+.icouch table#docs thead td {
+    font-weight: bold;
+}
+
+.icouch table#docs td {
+    border-bottom: 1px inset #9aafe5;
+}
+
+.icouch table#docs tbody tr:hover {
+    background-color: #dddddd;
+}
+
+.icouch div#map textarea {
+    background-color: #fff8dc;
+    margin-left: 20px;
+    width: 80%;
+}
+
+.icouch div#map table#results thead td {
+    font-weight: bold;
+}
+
+.icouch div#map table#results tbody td.reduced {
+    vertical-align: middle;
+    border-left: 2px dotted #9aafe5;
+}
+
+.icouch div#map table#results tbody tr:hover {
+    background-color: #dddddd;
+}
+
+.icouch div#blurb {
+    margin-left: 20px;
+    padding-left: 20px;
+    border-left: 2px dotted #9aafe5;
+    color: #000088;
+}
+
+img.icon {
+    vertical-align: middle;
+    border: none;
+    width: 16px;
+}
+
+.jstring { color: #008800; }
+.jnumber { color: #880000; }
+.jkeyword { color: #000088; }
+
+.credits {
+    margin: -10px 0 2ex 20px; 
+    font-size: 10pt; 
+}
+
+.intro {
+    margin-bottom:2ex;
+}
