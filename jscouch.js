@@ -1,207 +1,31 @@
 /*
- * "THE BEER-WARE LICENSE" (Revision 42):
- * Mu Dynamics Research Labs wrote this file. As long as you retain this
- * notice you can do whatever you want with this stuff. If we meet some day,
- * and you think this stuff is worth it, you can buy us a beer in return.
- *
- * http://www.mudynamics.com
- * http://labs.mudynamics.com
- * http://www.pcapr.net
- */
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License.  You may obtain a copy
+  of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+  License for the specific language governing permissions and limitations under
+  the License.
+
+  Initial implementation:
+
+  * http://www.mudynamics.com
+  * http://labs.mudynamics.com
+  * http://www.pcapr.net
+*/
+
 (function($) {
 $(function() {
   // Pretty much the same code in couch_view.erl, except this is JavaScript
   // instead of Erlang.
-  var collator = function() {
-    return {
-      sorter: function(a, b) {
-        var tA = collator.type_sort(a);
-        var tB = collator.type_sort(b);
-        if (tA !== tB) {
-          return tA - tB;
-        }
-        return collator.less_same_type[tA](a, b);
-      },
-      type_sort: function(k) {
-        if (k === undefined || k === null || k === false || k === true) {
-          return 0;
-        }
+  
 
-        if (typeof(k) === 'number') {
-          return 1;
-        }
-
-        if (typeof(k) === 'string') {
-          return 2;
-        }
-
-        if (Object.prototype.toString.apply(k) === '[object Array]') {
-          return 3;
-        }
-
-        return 4;
-      },
-      atom_sort: function(k) {
-        if (k === undefined) {
-          return 0;
-        }
-
-        if (k === null) {
-          return 1;
-        }
-
-        if (k === false) {
-          return 2;
-        }
-
-        return 3;
-      },
-      less_same_type: [
-        function(atomA, atomB) {
-          return collator.atom_sort(atomA) - collator.atom_sort(atomB);
-        },
-        function(numberA, numberB) {
-          return numberA - numberB;
-        },
-        function(stringA, stringB) {
-          return stringA < stringB ? -1 : stringA > stringB ? 1 : 0;
-        },
-        function(arrayA, arrayB) {
-          for (var i=0; i<arrayA.length; ++i) {
-            var eA = arrayA[i];
-            var tA = collator.type_sort(eA);
-            var eB = arrayB[i];
-            var tB = collator.type_sort(eB);
-            if (eB === undefined) {
-              return 1;
-            }
-
-            if (tA === tB) {
-              var val = collator.less_same_type[tA](eA, eB);
-              if (val !== 0) {
-                return val;
-              }
-            } else {
-              return tA - tB;
-            }
-          }
-
-          return 0;
-        },
-        function(objA, objB) {
-          var aryA = [];
-          for (var i in objA) { aryA.push([i, objA[i]]); }
-          var aryB = [];
-          for (var j in objB) { aryB.push([j, objB[j]]); }
-          return collator.less_same_type[3](aryA, aryB);
-        }
-      ]
-    };
-  }();
-
-  // The 'database' containing a list of JSON documents which also supports
-  // map/reduce but with hooks to visualize the results
-  var couch = function() {
-    var dbobj = {};
-    var nextid = 0;
-    var docs = [];
-
-    var mapkv = [];
-    var emit = function(k, v) {
-      var last = mapkv[mapkv.length-1];
-      last.kv.push([k || null, v || null]);
-    };
-
-    var log = function(obj) {
-      alert(JSON.stringify(obj));
-    };
-
-    return $.extend(dbobj, {
-      clear: function() {
-        docs = [];
-        nextid = 0;
-        return dbobj;
-      },
-      put: function(doc) {
-        doc._id  = '' + (++nextid);
-        doc._rev = '1';
-        docs.push(doc);
-        return dbobj;
-      },
-      each: function(fn) {
-        $.each(docs, fn);
-        return dbobj;
-      },
-      map: function(mapfnval) {
-        mapkv = [];
-        var mapfn = eval('foo=(function(doc) {' + mapfnval + '})');
-        couch.each(function(index, doc) {
-          mapkv.push({ doc: doc, kv: [] });
-          mapfn(doc);
-        });
-
-        var maprs = [];
-        $.each(mapkv, function(i1, e1) {
-          $.each(e1.kv, function(i2, e2) {
-            maprs.push({ id: e1.doc._id, key: e2[0], value: e2[1] });
-          });
-        });
-
-        maprs.sort(function(d1, d2) { 
-          return collator.sorter(d1.key, d2.key); 
-        });
-        return maprs;
-      },
-      reduce: function(maprs, redfnval) {
-        var groups = [];
-        var sum = function(values) {
-          var rv = 0;
-          for (var i in values) {
-            rv += values[i];
-          }
-          return rv;
-        };
-
-        // First group the values by key (we use the collator to group
-        // equivalent keys)
-        $.each(maprs, function(i, e) {
-          var last = groups[groups.length-1] || null;
-          if (last && collator.sorter(last.key[0][0], e.key) === 0) {
-            last.key.push([e.key, e.id]);
-            last.value.push(e.value);
-            return;
-          }
-
-          groups.push({ key: [ [e.key,e.id] ], value: [ e.value ]});
-        });
-
-        // Then run each of the keys through the reduce function. If a
-        // given group has more than 2 keys, then we invoke rereduce
-        // just to illustrate how rereduce works
-        var redfn = eval('foo=(function(keys, values, rereduce) {' + redtxt.val() + '})');
-        $.each(groups, function(i, e) {
-          if (e.value.length > 2) {
-            var k1 = e.key.slice(0, e.key.length/2);
-            var v1 = e.value.slice(0, e.value.length/2);
-            var rv1 = redfn(k1, v1) || null;
-
-            var k2 = e.key.slice(e.key.length/2);
-            var v2 = e.value.slice(e.value.length/2);
-            var rv2 = redfn(k2, v2) || null;
-
-            e.value = redfn(null, [ rv1, rv2 ], true);
-          } else {
-            e.value = redfn(e.key, e.value) || null;
-          }
-
-          e.count = e.key.length;
-          e.key   = e.key[0][0];
-        });
-
-        return groups;
-      }
-    });
-  }();
+  var couch = $.jscouch.couchdb;
+  var collator = $.jscouch.collator;
 
   // syntax highlighter (works with JSON.stringify)
   var highlighter = function(key, value) {
@@ -658,87 +482,7 @@ $(function() {
     }
   });
 
-  // popluate the DB with initial entries
-  var now = new Date().getTime();
-  var millisInHHour = 1000*60*30;
-  couch.put({ 
-    name: 'fish.jpg', 
-    created_at: new Date(now + millisInHHour*Math.random()).toUTCString(),
-    user: 'bob',
-    type: 'jpeg', 
-    camera: 'nikon',
-    info: {
-      width: 100, 
-      height: 200, 
-      size: 12345
-    },
-    tags: [ 'tuna', 'shark' ]
-  });
-  couch.put({ 
-    name: 'trees.jpg', 
-    created_at: new Date(now + millisInHHour*Math.random()).toUTCString(),
-    user: 'john',
-    type: 'jpeg', 
-    camera: 'canon',
-    info: {
-      width: 30, 
-      height: 250, 
-      size: 32091
-    },
-    tags: [ 'oak' ]
-  });
-  couch.put({ 
-    name: 'snow.png', 
-    created_at: new Date(now + millisInHHour*Math.random()).toUTCString(),
-    user: 'john',
-    type: 'png', 
-    camera: 'canon',
-    info: {
-      width: 64, 
-      height: 64, 
-      size: 1253
-    },
-    tags: [ 'tahoe', 'powder' ]
-  });
-  couch.put({ 
-    name: 'hawaii.png', 
-    created_at: new Date(now + millisInHHour*Math.random()).toUTCString(),
-    user: 'john',
-    type: 'png', 
-    camera: 'nikon',
-    info: {
-      width: 128, 
-      height: 64, 
-      size: 92834
-    },
-    tags: [ 'maui', 'tuna' ]
-  });
-  couch.put({ 
-    name: 'hawaii.gif', 
-    created_at: new Date(now + millisInHHour*Math.random()).toUTCString(),
-    user: 'bob',
-    type: 'gif', 
-    camera: 'canon',
-    info: {
-      width: 320, 
-      height: 128, 
-      size: 49287
-    },
-    tags: [ 'maui' ]
-  });
-  couch.put({ 
-    name: 'island.gif', 
-    created_at: new Date(now + millisInHHour*Math.random()).toUTCString(),
-    user: 'zztop',
-    type: 'gif', 
-    camera: 'nikon',
-    info: {
-      width: 640, 
-      height: 480, 
-      size: 50398
-    },
-    tags: [ 'maui' ]
-  });
+  $.jscouch.documents.load();
 
   // populate the initial docs to the UI
   couch.each(function(index, doc) { addDocToTable(doc); });
