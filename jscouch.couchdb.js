@@ -98,7 +98,7 @@
       // Then run each of the keys through the reduce function. If a
       // given group has more than 2 keys, then we invoke rereduce
       // just to illustrate how rereduce works
-      var redfn = eval('foo=(function(keys, values, rereduce) {' + redtxt.val() + '})');
+      var redfn = eval('foo=(function(keys, values, rereduce) {' + redfnval + '})');
       $.each(groups, function(i, e) {
         if (e.value.length > 2) {
           var k1 = e.key.slice(0, e.key.length/2);
